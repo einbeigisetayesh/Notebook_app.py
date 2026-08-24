@@ -1,25 +1,28 @@
-## Notebook Application | Python Desktop Application
+# Notebook Application | Desktop & Web
 
-Designed and developed a feature-rich desktop notebook application using **Python and Tkinter**, focused on customizable user experience, persistent local data management, and interactive note-taking functionality.
+A feature-rich personal notebook application designed and developed in Python, available in both desktop and web-based versions. The project focuses on interactive note-taking, customizable UI/UX, persistent data management, multimedia content, and application state management.
 
-### Technical Highlights
+🌐 Live Web App: https://gilded-sawine-ecb738.netlify.app
 
-* Developed a responsive desktop GUI using **Tkinter and ttk**, implementing an interactive and customizable user interface.
-* Implemented **persistent JSON-based data storage** for saving and restoring notes, user preferences, favorites, and application state across sessions.
-* Integrated **Pillow (PIL)** for image processing, rendering, and dynamic visual content within the application.
-* Implemented customizable **text styling**, including font size, text color, highlighting, and visual formatting options.
-* Developed **theme and appearance customization**, including customizable backgrounds and a dedicated dark mode.
-* Implemented a **favorites management system** for quickly accessing important or frequently used notes.
-* Utilized **threading** to handle background operations without blocking the main GUI event loop, improving application responsiveness.
-* Used **Base64 and in-memory I/O (`io`)** for handling and representing binary/image data within the application's persistence workflow.
-* Applied Python standard libraries such as **datetime, math, and random** for application logic, time-based functionality, calculations, and dynamic behavior.
-* Implemented file interaction capabilities using **file dialogs**, enabling users to interact with local files through the graphical interface.
-* Structured the application around event-driven programming principles and modular GUI components to maintain an interactive and maintainable codebase.
+## Key Features & Technical Highlights
 
-### Technologies
+- Developed a desktop notebook application using Python, Tkinter, and ttk, with a responsive and customizable graphical user interface.
+- Developed and deployed a web-based version of the application, providing browser-based access to the notebook.
+- Implemented persistent JSON-based data storage for notes, favorites, user preferences, and application state.
+- Integrated Pillow (PIL) for image processing and dynamic visual content.
+- Implemented rich text customization, including font selection, font size, text color, bold, italic, underline, and highlighting.
+- Added customizable themes, backgrounds, and dark mode to improve user experience.
+- Implemented favorites management for quick access to important notes.
+- Added multimedia note-taking capabilities, including image and voice integration in the web version.
+- Utilized threading for background operations to maintain GUI responsiveness.
+- Used Base64 encoding and in-memory I/O (`io`) for handling binary and image data within the application's persistence workflow.
+- Implemented local file interaction through graphical file dialogs.
+- Applied event-driven programming and modular GUI design principles to maintain an interactive and maintainable codebase.
 
-**Python · Tkinter · ttk · Pillow (PIL) · JSON · Threading · Base64 · File I/O · Event-Driven Programming**
+## Technologies
 
-### Project Focus
+Python · Tkinter · ttk · Pillow (PIL) · JSON · Threading · Base64 · File I/O · HTML · CSS · JavaScript · Netlify
 
-Desktop GUI Development · Local Data Persistence · UI/UX Customization · Image Processing · Multithreading · Application State Management
+## Project Focus
+
+Desktop Application Development · Web Application Development · GUI Design · UI/UX Customization · Data Persistence · Image Processing · Multimedia Integration · Multithreading · Application State Management
