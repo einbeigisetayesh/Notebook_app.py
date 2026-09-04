@@ -17,21 +17,13 @@ except ImportError:
     SPEECH_RECOGNITION_AVAILABLE = False
 
 # ===================== Page / Canvas Size Constants =====================
-# The whole page (background art, buttons, everything) is a fixed size that
-# matches the window — nothing about the page itself scrolls anymore.
-# Only the Text widget where you actually write gets its own scrollbar,
-# like a normal text editor.
 W = 600
 H = 500
 
-WINDOW_W = W  # window matches the page width exactly, no leftover white strip on the side
+WINDOW_W = W 
 WINDOW_H = H
 
-# The writing box (title + ruled text area) always stays exactly this many
-# pixels, no matter what font size/family is chosen in "Features". Only the
-# spacing between the ruled lines and the size of the writing itself change
-# with font size — the box, and everything around it on the page, never
-# grows or shrinks.
+
 TEXTBOX_W = 480
 TEXTBOX_H = 230
 
@@ -41,10 +33,8 @@ root.title("notebook")
 
 selected_color = "light pink"
 selected_size = 15
-bg_image_tk = None  # keep a reference so the image isn't garbage-collected
+bg_image_tk = None 
 
-# Give scrollbars a clearly visible pink thumb instead of relying on
-# whatever (sometimes near-invisible) default the OS theme provides.
 _scrollbar_style = ttk.Style()
 try:
     _scrollbar_style.theme_use("default")
@@ -60,9 +50,7 @@ _scrollbar_style.configure(
 )
 
 # ===================== Cute Pastel Popups (replaces tkinter.messagebox) =====================
-# All info / warning / error popups in the app go through this instead of
-# the plain OS messagebox, so they always look like part of the notebook
-# (pastel colors, rounded card, cute icon) and always read in English.
+
 _DIALOG_PALETTE = {
     "info": {"bg": "#E0F7FA", "accent": "#4FC3F7", "icon": "💌"},
     "warning": {"bg": "#FFE4EC", "accent": "#FF9FBB", "icon": "🐰"},
@@ -181,8 +169,6 @@ def delete_note_and_refresh(note, refresh_func):
     )
 
 # ===================== Page Container =====================
-# All pages live on top of each other inside this container.
-# Switching pages just raises one to the front (no blank flashes).
 container = tk.Frame(root)
 container.pack(fill="both", expand=True)
 
@@ -277,11 +263,7 @@ def make_text_box(parent, width=60, height=15, **text_kwargs):
                 text_widget.yview_scroll(steps, "units")
         return "break"
 
-    # Bind/unbind the wheel only while the mouse is actually over this box
-    # (same reliable pattern used for the notes list further down). This is
-    # what lets you freely scroll up and down at ANY point in what you've
-    # written — not only once you've typed all the way down to the last
-    # visible line.
+    
     def _bind_wheel(_e=None):
         text_widget.bind_all("<MouseWheel>", _on_wheel)
         text_widget.bind_all("<Button-4>", _on_wheel)
@@ -295,12 +277,6 @@ def make_text_box(parent, width=60, height=15, **text_kwargs):
     text_widget.bind("<Enter>", _bind_wheel)
     text_widget.bind("<Leave>", _unbind_wheel)
 
-    # Note: we deliberately do NOT add a custom "see(insert) on every
-    # keystroke" handler here anymore. Tk's Text widget already keeps the
-    # cursor visible as you type on its own, and that extra handler was
-    # forcing the view back down to the cursor right after every key press
-    # — which is exactly what made manual scrolling feel like it only
-    # "worked" once you reached the last line.
 
     return frame, text_widget
 
@@ -350,23 +326,6 @@ def make_titled_text_box(parent, width=60, height=14, **text_kwargs):
     return wrapper, title_entry, text_widget
 
 # ===================== Voice-to-Text (Speech Recognition) =====================
-# Lets the person tap a microphone button and dictate straight into
-# whichever writing box they're using — the recognized words are inserted
-# right at the cursor position. Needs two extra packages the app doesn't
-# ship with by default:
-#
-#     pip install SpeechRecognition pyaudio
-#
-# (On Windows pyaudio installs normally with pip. On macOS you may need
-# `brew install portaudio` first. On Linux, `sudo apt-get install
-# python3-pyaudio` or `portaudio19-dev` before the pip install.)
-#
-# It also needs an internet connection, since it uses Google's free
-# speech-to-text web service under the hood (the same one used by
-# `recognizer.recognize_google`). Default dictation language is Persian
-# ("fa-IR") since that's what most notes here will be written in — change
-# VOICE_LANGUAGE below to "en-US" (or any other Google-supported language
-# code) if you'd rather dictate in English.
 VOICE_LANGUAGE = "fa-IR"
 
 def _set_voice_button_state(btn, state):
@@ -386,16 +345,13 @@ def _run_speech_recognition(text_widget, btn):
     the notebook window. Only touches Tkinter widgets back on the main
     thread via root.after(), which is the safe way to do it."""
     recognizer = sr.Recognizer()
-    # Stop recording sooner once you go quiet, instead of waiting a long
-    # fixed time — this is what was making it feel stuck on "Listening…".
+    
     recognizer.pause_threshold = 0.6
     recognizer.non_speaking_duration = 0.4
     try:
         with sr.Microphone() as source:
             recognizer.adjust_for_ambient_noise(source, duration=0.4)
-            # timeout: how long to wait for you to START speaking.
-            # phrase_time_limit: the longest a single recording can run —
-            # kept short so it can't get "stuck" listening for too long.
+            
             audio = recognizer.listen(source, timeout=6, phrase_time_limit=10)
     except sr.WaitTimeoutError:
         root.after(0, lambda: cute_warning(
@@ -410,8 +366,6 @@ def _run_speech_recognition(text_widget, btn):
         root.after(0, lambda: _set_voice_button_state(btn, "idle"))
         return
 
-    # Recording is done — now it's off to Google's servers to be
-    # transcribed. Switch the button so it's clear it's not stuck.
     root.after(0, lambda: _set_voice_button_state(btn, "processing"))
 
     try:
@@ -449,7 +403,7 @@ def insert_voice_text(text_widget, btn):
         )
         return
     if getattr(btn, "_listening", False):
-        return  # already listening — ignore extra clicks
+        return  
 
     btn._listening = True
     _set_voice_button_state(btn, "listening")
@@ -459,9 +413,7 @@ def insert_voice_text(text_widget, btn):
 welcome_page = tk.Frame(container, bg="#FFF3F7")
 welcome_page.place(x=0, y=0, relwidth=1, relheight=1)
 
-# A soft pastel-gradient picture sits behind everything on the welcome
-# page (filled in for real once the background generators are defined
-# further down — see _apply_welcome_background()).
+
 welcome_bg_label = tk.Label(welcome_page, bd=0)
 welcome_bg_label.place(x=0, y=0, width=W, height=H)
 welcome_bg_label.lower()
@@ -524,9 +476,7 @@ cutelabel2.place(x=520, y=390)
 main_page = tk.Frame(container, bg="#FFF9FC")
 main_page.place(x=0, y=0, relwidth=1, relheight=1)
 
-# Soft pastel background image (filled in once the background generators
-# are defined further down — see the "main_bg_label.configure" call near
-# the write page's default background).
+
 main_bg_label = tk.Label(main_page, bd=0)
 main_bg_label.place(x=0, y=0, width=W, height=H)
 main_bg_label.lower()
@@ -537,32 +487,24 @@ main_bg_label.lower()
 )
 main_header.place(x=W // 2, y=30, anchor="center")'''
 
-# Widgets are placed straight onto main_page (no extra opaque wrapper
-# frame) so the pastel background image shows through around them.
+
 main_buttons = main_page
 
-# ===================== Write Page =====================
-# write_page is a plain, fixed-size frame now — no Canvas wrapper, so the
-# page itself never scrolls. Only text_area (below) gets its own scrollbar.
+# ===================== Write Page ==================
 write_page = tk.Frame(container, bg="white", width=W, height=H)
 write_page.place(x=0, y=0, relwidth=1, relheight=1)
 write_inner = write_page
 
-# Background image label — sits behind everything else on the write page.
 bg_label = tk.Label(write_inner, bd=0)
 bg_label.place(x=0, y=0, width=W, height=H)
 bg_label.lower()
 
-# The text box keeps its original size and position — it does NOT stretch,
-# and its pixel size is fixed (TEXTBOX_W x TEXTBOX_H) so picking a bigger or
-# smaller font/size never changes the box itself — only the writing inside it.
+
 text_area_frame, text_area_title, text_area = make_titled_text_box(write_inner, width=60, height=14, bg="white")
 text_area_frame.place(x=W // 2, y=int(H * 0.55), anchor="center", width=TEXTBOX_W, height=TEXTBOX_H)
 
 text_area_frame.lift()
 # ===================== Built-in Cute Background Patterns =====================
-# These are drawn entirely with code (no external images needed), so the
-# app works out of the box for anyone who runs it.
 
 def _heart_points(cx, cy, scale):
     pts = []
@@ -741,8 +683,6 @@ def add_ruled_lines(text_widget, color="black"):
     Safe to call again (e.g. after a resize or font change) — old lines
     are removed first."""
     text_widget.update_idletasks()
-
-    # remove any lines drawn previously
     for ln in getattr(text_widget, "_ruled_lines", []):
         ln.destroy()
     text_widget._ruled_lines = []
@@ -755,13 +695,13 @@ def add_ruled_lines(text_widget, color="black"):
 
     height = text_widget.winfo_height()
     if height <= 1 or line_height <= 0:
-        return  # widget not laid out yet
+        return  
 
     y = line_height
     while y < height:
         ln = tk.Frame(text_widget.master, bg=color, height=1,
                        bd=0, highlightthickness=0)
-        # place it positioned relative to the text widget itself, on top of it
+        
         ln.place(in_=text_widget, x=0, y=y, relwidth=1.0, height=1)
         text_widget._ruled_lines.append(ln)
         y += line_height
@@ -843,7 +783,7 @@ BACKGROUND_THEMES = {
 def apply_background(generator_func):
     global bg_image_tk
     img = generator_func()
-    #img = add_notebook_lines(img)
+    
     bg_image_tk = ImageTk.PhotoImage(img)
     bg_label.configure(image=bg_image_tk)
     bg_label.lower()
@@ -918,41 +858,36 @@ def choose_background():
             bg=_theme_palette[i % len(_theme_palette)], fg="white", font=("Arial", 13)
         ).pack(pady=6, padx=20, fill="x")
 
-# Give the writing page the same soft pink background as the main page by default
+
 _default_bg = generate_main_page_soft_pink_bg()
 bg_image_tk = ImageTk.PhotoImage(_default_bg)
 bg_label.configure(image=bg_image_tk)
 bg_label.lower()
 
-# Give the welcome page a soft, pastel, cute-sticker vibe right from the start
+
 _welcome_bg_img = ImageTk.PhotoImage(generate_pink_hearts_bg())
 welcome_bg_label.configure(image=_welcome_bg_img)
 welcome_bg_label.lower()
 
-# Give the main (home) page a soft, calm pink background
+
 _main_bg_img = ImageTk.PhotoImage(generate_main_page_soft_pink_bg())
 main_bg_label.configure(image=_main_bg_img)
 main_bg_label.lower()
 
 # ===================== Create New Page =====================
 def create_page(current_page=None):
-    # a plain, fixed-size frame — no Canvas wrapper, so the page itself
-    # never scrolls. Only its Text widget (below) gets a scrollbar.
     page = tk.Frame(container, bg="white", width=W, height=H)
     page.place(x=0, y=0, relwidth=1, relheight=1)
     page_inner = page
 
-    # each new page also gets its own background image, matching the current one
+    
     page_bg_label = tk.Label(page_inner, bd=0)
     page_bg_label.place(x=0, y=0, width=W, height=H)
     if bg_image_tk is not None:
         page_bg_label.configure(image=bg_image_tk)
     page_bg_label.lower()
 
-    # The text box keeps its original position, and — like the main writing
-    # page — its pixel size is fixed (TEXTBOX_W x TEXTBOX_H), so changing
-    # font size in "Features" only changes the ruled-line spacing and the
-    # size of the pencil/writing itself, never the box or the page around it.
+    
     txt_frame, txt_title_entry, txt = make_titled_text_box(
         page_inner,
         width=60,
@@ -1079,22 +1014,19 @@ def insert_image_into_text(text_widget):
     try:
         img = Image.open(path)
         img = img.convert("RGBA") if img.mode not in ("RGB", "RGBA") else img
-        # keep it a reasonable size so it fits nicely inside the notebook page
+        
         img.thumbnail((220, 220))
         photo = ImageTk.PhotoImage(img)
     except Exception:
         cute_error("Oops!", "We couldn't open this picture.")
         return
 
-    # Tk garbage-collects PhotoImages with no live reference, so keep one
-    # per text widget for as long as that widget exists.
+
     if not hasattr(text_widget, "_inserted_images"):
         text_widget._inserted_images = []
     text_widget._inserted_images.append(photo)
 
-    # Keep the exact bytes of the (already resized) picture, keyed by the
-    # internal image name Tk assigns it, so save_text() can bundle it into
-    # the same note record as the surrounding text.
+    
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     b64_data = base64.b64encode(buf.getvalue()).decode("ascii")
@@ -1156,7 +1088,7 @@ WEEKDAYS = {
     5: "Saturday",
     6: "Sunday",
 }
-# kept for backwards compatibility with older code paths / saved notes
+
 PERSIAN_WEEKDAYS = WEEKDAYS
 
 def get_timestamp_line():
@@ -1364,9 +1296,7 @@ def toggle_night_mode(text_widget, page_bg_label):
     apply_night_mode(text_widget, page_bg_label, new_state)
 
 # ===================== Color & Size =====================
-# A curated palette (not just a single "click for the OS color dialog"
-# button), with a live preview and a "Custom Color..." escape hatch for
-# anyone who wants a color outside the palette.
+
 PRESET_COLORS = [
     ("Blush Pink", "#FF6FA5"), ("Hot Pink", "#FF1493"), ("Rose", "#E75480"),
     ("Coral", "#FF7F50"), ("Sunset Orange", "#FF6B35"), ("Golden", "#FFB700"),
@@ -1445,7 +1375,6 @@ def choose_color():
     ).pack(pady=12, padx=20, fill="x")
 
 # ===================== Features (font size, pen/font family, style) =====================
-# Font "pen" choices — each one gives the writing a different feel.
 FONT_CHOICES = [
     ("✒️ Classic", "Arial"),
     ("✏️ Handwritten", "Comic Sans MS"),
@@ -1495,8 +1424,7 @@ def open_size_window():
     preview_label = tk.Label(preview_frame, text="Aa Bb Cc — example text", bg="#FFF0F5", fg=selected_color)
     preview_label.pack(pady=16)
 
-    # local working copy — only committed to the real globals when
-    # "OK" is pressed
+    
     state = {
         "size": selected_size,
         "family": selected_font_family,
@@ -1670,7 +1598,7 @@ def open_note_detail(note):
 
     segments = note.get("segments")
     if segments:
-        body_text._detail_images = []  # keep PhotoImage references alive
+        body_text._detail_images = []  
         for seg in segments:
             if seg["type"] == "text":
                 body_text.insert(tk.END, seg["content"])
@@ -1684,10 +1612,10 @@ def open_note_detail(note):
                 except Exception:
                     pass
     else:
-        # notes saved before this feature existed only have plain content
+        
         body_text.insert("1.0", note.get("content", ""))
 
-    body_text.configure(state="disabled")  # read-only viewer for this one note
+    body_text.configure(state="disabled") 
 
     make_button(
         win, "❌ Close", win.destroy, bg="#FF9FBB", fg="white", font=("Arial", 12)
@@ -1707,9 +1635,7 @@ tk.Label(
     notes_top_bar, text="📚 My Notes", font=("Arial", 18, "bold"), bg="#FFD6E8", fg="#B24A72"
 ).pack(side="left", padx=20)
 
-# The list of notes can grow long, so it gets its own ordinary scrollable
-# area — this is just a browsing list, not the writing box, so scrolling
-# the whole list here is expected and fine.
+
 notes_canvas = tk.Canvas(notes_page, bg="#FFF9FC", highlightthickness=0)
 notes_list_scrollbar = ttk.Scrollbar(
     notes_page, orient="vertical",
@@ -1755,7 +1681,7 @@ notes_canvas.bind("<Enter>", _bind_notes_wheel)
 notes_canvas.bind("<Leave>", _unbind_notes_wheel)
 
 def show_notes_page():
-    # rebuild the list every time the page is opened, so it's always current
+    
     for child in notes_list_inner.winfo_children():
         child.destroy()
 
@@ -1767,9 +1693,6 @@ def show_notes_page():
             font=("Arial", 13), bg="#FFF9FC", fg="#B98CA6"
         ).pack(pady=20)
     else:
-        # group notes by their title now, instead of by date — each named
-        # note gets its own section, newest section (by its most recent
-        # entry) first, newest entry first inside each section
         groups = {}
         for note in notes:
             key = note.get("title") or "No title"
@@ -1880,7 +1803,6 @@ favorites_canvas.bind("<Enter>", _bind_favorites_wheel)
 favorites_canvas.bind("<Leave>", _unbind_favorites_wheel)
 
 def show_favorites_page():
-    # rebuild the list every time the page is opened, so it's always current
     for child in favorites_list_inner.winfo_children():
         child.destroy()
 
